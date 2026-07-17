@@ -19,7 +19,7 @@ export async function runQuery(cypher, params = {}) {
   // // Use the driver to run queries
 
   // await driver.close()
-  const session = DATABASE ? driver.session({ database: DATABASE }) : driver.session();
+  const session = driver.session({ database: DATABASE });
   try {
     const result = await session.run(cypher, params);
     return result.records;
