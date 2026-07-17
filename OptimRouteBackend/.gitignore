@@ -1,0 +1,6 @@
+/node_modules
+/notuse
+dummy.csv
+rail_data.csv
+train_segments.csv
+.env

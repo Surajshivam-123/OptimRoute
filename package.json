@@ -1,0 +1,14 @@
+{
+  "name": "optimroute-workspace",
+  "version": "1.0.0",
+  "description": "OptimRoute Monorepo Workspace Orchestrator",
+  "scripts": {
+    "dev:all": "npx -y concurrently -n \"backend,frontend\" -c \"yellow,cyan\" \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "dev": "npm run dev:all",
+    "backend:dev": "npm --prefix OptimRouteBackend run dev",
+    "backend:start": "npm --prefix OptimRouteBackend run start",
+    "frontend:dev": "npm --prefix OptimRouteFrontend run dev",
+    "frontend:build": "npm --prefix OptimRouteFrontend run build",
+    "frontend:start": "npm --prefix OptimRouteFrontend run start"
+  }
+}

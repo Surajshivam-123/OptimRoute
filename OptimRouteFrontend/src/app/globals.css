@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@theme {
+  --color-rail-50: #f8fafc;
+  --color-rail-100: #f1f5f9;
+  --color-rail-200: #e2e8f0;
+  --color-rail-300: #cbd5e1;
+  --color-rail-400: #94a3b8;
+  --color-rail-500: #64748b;
+  --color-rail-600: #475569;
+  --color-rail-700: #334155;
+  --color-rail-800: #1e293b;
+  --color-rail-900: #0f172a;
+  --color-rail-950: #020617;
+
+  --color-transit-orange: #ff6b00;
+  --color-transit-darkOrange: #d45600;
+  --color-transit-cyan: #06b6d4;
+  --color-transit-teal: #14b8a6;
+  --color-transit-green: #10b981;
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-ping-slow: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@utility glass-card {
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+@utility glass-card-hover {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+  &:hover {
+    background-color: rgba(15, 23, 42, 0.8);
+    border-color: rgba(71, 85, 105, 0.8);
+  }
+}
+
+@utility transit-input {
+  background-color: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.8);
+  color: #ffffff;
+  border-radius: 0.75rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  &:focus {
+    border-color: #ff6b00;
+    --tw-ring-color: #ff6b00;
+    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+  }
+  &::placeholder {
+    color: #64748b;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-rail-950 text-rail-100 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Custom Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-rail-900;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-rail-700 rounded-full hover:bg-rail-600 transition-colors;
+  }
+}
+
+/* Custom rail track animation */
+@keyframes dash {
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+
+.animate-rail-flow {
+  stroke-dasharray: 8, 4;
+  animation: dash 2s linear infinite;
+}
