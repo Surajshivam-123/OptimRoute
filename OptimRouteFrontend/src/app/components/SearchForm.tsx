@@ -121,11 +121,10 @@ function StationAutocomplete({
                   type="button"
                   onMouseDown={e => e.preventDefault()} // prevent blur before click
                   onClick={() => onSelect(stn)}
-                  className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors border-b border-rail-800/40 last:border-b-0 ${
-                    i === highlightIndex
+                  className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors border-b border-rail-800/40 last:border-b-0 ${i === highlightIndex
                       ? 'bg-rail-800'
                       : 'hover:bg-rail-800/60'
-                  }`}
+                    }`}
                 >
                   <div className={`bg-rail-800 p-1.5 rounded-lg shrink-0 ${accentClass}`}>
                     <Train className="h-4 w-4" />
@@ -138,11 +137,10 @@ function StationAutocomplete({
                       <HighlightMatch text={stn.code} query={value} />
                     </div>
                   </div>
-                  <div className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider border ${
-                    i === highlightIndex
+                  <div className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider border ${i === highlightIndex
                       ? `${accentClass} border-current opacity-80`
                       : 'text-rail-500 border-rail-700'
-                  }`}>
+                    }`}>
                     {stn.code}
                   </div>
                 </button>
@@ -168,91 +166,76 @@ export default function SearchForm({
   onSearch,
   isLoading = false,
 }: SearchFormProps) {
-  const [stations, setStations]           = useState<Station[]>([]);
+  const [stations, setStations] = useState<Station[]>([]);
   const [stationsLoading, setStationsLoading] = useState(true);
 
-  const [sourceInput, setSourceInput]       = useState('');
-  const [sourceStation, setSourceStation]   = useState<Station | null>(null);
-  const [destInput, setDestInput]           = useState('');
-  const [destStation, setDestStation]       = useState<Station | null>(null);
-  const [travelDate, setTravelDate]         = useState('');
+  const [sourceInput, setSourceInput] = useState('');
+  const [sourceStation, setSourceStation] = useState<Station | null>(null);
+  const [destInput, setDestInput] = useState('');
+  const [destStation, setDestStation] = useState<Station | null>(null);
+  const [travelDate, setTravelDate] = useState('');
 
   const [showSource, setShowSource] = useState(false);
-  const [showDest,   setShowDest]   = useState(false);
-  const [sourceHL,   setSourceHL]   = useState(-1); // keyboard highlight index
-  const [destHL,     setDestHL]     = useState(-1);
-  const [errorMsg,   setErrorMsg]   = useState('');
+  const [showDest, setShowDest] = useState(false);
+  const [sourceHL, setSourceHL] = useState(-1); // keyboard highlight index
+  const [destHL, setDestHL] = useState(-1);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const sourceRef = useRef<HTMLDivElement>(null);
-  const destRef   = useRef<HTMLDivElement>(null);
+  const destRef = useRef<HTMLDivElement>(null);
+
+  const lastInitialSourceRef = useRef<string | null>(null);
+  const lastInitialDestRef = useRef<string | null>(null);
+  const lastInitialDateRef = useRef<string | null>(null);
 
   // ── Fetch all stations once on mount (used as the base list) ─────────────
   useEffect(() => {
-    fetch('/api/stations')
+    fetch('/stations.json')
       .then(r => r.json())
-      .then(d => { if (d.success) setStations(d.stations); })
-      .catch(() => {})
+      .then(d => {
+        if (Array.isArray(d)) {
+          setStations(d);
+        }
+      })
+      .catch(() => { })
       .finally(() => setStationsLoading(false));
   }, []);
-
-  // ── Debounced search: when user types 2+ chars, refine from backend ───────
-  useEffect(() => {
-    const term = sourceInput.trim();
-    if (term.length < 2 || sourceStation) return; // skip if selected or too short
-    const timer = setTimeout(() => {
-      fetch(`/api/stations?q=${encodeURIComponent(term)}`)
-        .then(r => r.json())
-        .then(d => {
-          if (d.success && d.stations.length > 0) {
-            // Merge: keep existing list + new hits deduplicated
-            setStations(prev => {
-              const ids = new Set(prev.map((s: Station) => s.id));
-              const fresh = d.stations.filter((s: Station) => !ids.has(s.id));
-              return [...prev, ...fresh];
-            });
-          }
-        })
-        .catch(() => {});
-    }, 250);
-    return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceInput]);
-
-  useEffect(() => {
-    const term = destInput.trim();
-    if (term.length < 2 || destStation) return;
-    const timer = setTimeout(() => {
-      fetch(`/api/stations?q=${encodeURIComponent(term)}`)
-        .then(r => r.json())
-        .then(d => {
-          if (d.success && d.stations.length > 0) {
-            setStations(prev => {
-              const ids = new Set(prev.map((s: Station) => s.id));
-              const fresh = d.stations.filter((s: Station) => !ids.has(s.id));
-              return [...prev, ...fresh];
-            });
-          }
-        })
-        .catch(() => {});
-    }, 250);
-    return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destInput]);
 
   // ── Init from props ───────────────────────────────────────────────────────
   useEffect(() => {
     if (stations.length === 0) return;
-    if (initialSourceId) {
+
+    const sourceChanged = initialSourceId !== lastInitialSourceRef.current;
+    const destChanged = initialDestinationId !== lastInitialDestRef.current;
+    const dateChanged = initialDate !== lastInitialDateRef.current;
+
+    if (sourceChanged && initialSourceId) {
       const s = stations.find(s => s.id === initialSourceId || s.code === initialSourceId);
-      if (s) { setSourceStation(s); setSourceInput(s.name); }
+      if (s) {
+        setSourceStation(s);
+        setSourceInput(s.name);
+        lastInitialSourceRef.current = initialSourceId;
+      }
     }
-    if (initialDestinationId) {
+    if (destChanged && initialDestinationId) {
       const s = stations.find(s => s.id === initialDestinationId || s.code === initialDestinationId);
-      if (s) { setDestStation(s); setDestInput(s.name); }
+      if (s) {
+        setDestStation(s);
+        setDestInput(s.name);
+        lastInitialDestRef.current = initialDestinationId;
+      }
     }
-    if (initialDate) setTravelDate(initialDate);
-    else if (!travelDate) setTravelDate(new Date().toISOString().split('T')[0]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (dateChanged) {
+      if (initialDate) {
+        setTravelDate(initialDate);
+        lastInitialDateRef.current = initialDate;
+      } else if (!travelDate) {
+        const today = new Date().toISOString().split('T')[0];
+        setTravelDate(today);
+        lastInitialDateRef.current = today;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stations, initialSourceId, initialDestinationId, initialDate]);
 
   // ── Set default date on mount ─────────────────────────────────────────────
@@ -260,7 +243,7 @@ export default function SearchForm({
     if (!travelDate && !initialDate) {
       setTravelDate(new Date().toISOString().split('T')[0]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Click-outside closes dropdowns ───────────────────────────────────────
@@ -286,26 +269,32 @@ export default function SearchForm({
   // ── Filter logic — show all when input is empty, filter otherwise ─────────
   const filteredSource = useMemo(() => {
     const term = sourceInput.toLowerCase().trim();
-    return stations.filter(s => {
-      if (destStation && (s.id === destStation.id || s.code === destStation.code)) return false;
-      if (!term) return true;
-      return (
+    let result = stations;
+    if (destStation) {
+      result = result.filter(s => s.id !== destStation.id && s.code !== destStation.code);
+    }
+    if (term) {
+      result = result.filter(s =>
         s.name.toLowerCase().includes(term) ||
         s.code.toLowerCase().includes(term)
       );
-    });
+    }
+    return result.slice(0, 30);
   }, [stations, sourceInput, destStation]);
 
   const filteredDest = useMemo(() => {
     const term = destInput.toLowerCase().trim();
-    return stations.filter(s => {
-      if (sourceStation && (s.id === sourceStation.id || s.code === sourceStation.code)) return false;
-      if (!term) return true;
-      return (
+    let result = stations;
+    if (sourceStation) {
+      result = result.filter(s => s.id !== sourceStation.id && s.code !== sourceStation.code);
+    }
+    if (term) {
+      result = result.filter(s =>
         s.name.toLowerCase().includes(term) ||
         s.code.toLowerCase().includes(term)
       );
-    });
+    }
+    return result.slice(0, 30);
   }, [stations, destInput, sourceStation]);
 
   // ── Keyboard nav factory ──────────────────────────────────────────────────
@@ -347,7 +336,7 @@ export default function SearchForm({
     setErrorMsg('');
     const tmpStn = sourceStation, tmpIn = sourceInput;
     setSourceStation(destStation); setSourceInput(destInput);
-    setDestStation(tmpStn);        setDestInput(tmpIn);
+    setDestStation(tmpStn); setDestInput(tmpIn);
   };
 
   // ── Submit ────────────────────────────────────────────────────────────────
@@ -355,7 +344,7 @@ export default function SearchForm({
     e.preventDefault();
     setErrorMsg('');
     if (!sourceStation) { setErrorMsg('Please select a valid departure station from the list.'); return; }
-    if (!destStation)   { setErrorMsg('Please select a valid destination station from the list.'); return; }
+    if (!destStation) { setErrorMsg('Please select a valid destination station from the list.'); return; }
     if (sourceStation.code === destStation.code) {
       setErrorMsg('Departure and destination cannot be the same station.');
       return;

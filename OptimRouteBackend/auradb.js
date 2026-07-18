@@ -10,15 +10,6 @@ const DATABASE = process.env.NEO4J_DATABASE;
 
 let driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
 export async function runQuery(cypher, params = {}) {
-  // URI examples: 'neo4j://localhost', 'neo4j+s://xxx.databases.neo4j.io'
-
-  // const serverInfo = await driver.getServerInfo()
-  // console.log('Connection established')
-  // console.log(serverInfo)
-
-  // // Use the driver to run queries
-
-  // await driver.close()
   const sessionConfig = {};
   if (DATABASE && DATABASE.trim() !== '') {
     sessionConfig.database = DATABASE;
